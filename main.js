@@ -262,3 +262,69 @@ document.querySelector('.farm-container').addEventListener('click', (event) => {
 });
 
 loadGame();
+
+// ==========================================
+// 4. 鍵盤控制人物自由走路 (WASD /  방향키)
+// ==========================================
+const char = document.getElementById('character');
+let charX = window.innerWidth / 2;
+let charY = window.innerHeight / 2;
+let isMoving = false;
+const speed = 10; // 走路速度
+const keys = { w: false, a: false, s: false, d: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+// 初始化人物位置
+char.style.left = `${charX}px`;
+char.style.top = `${charY}px`;
+// 取消原本 CSS 的 transition，改由 JavaScript 即時控制，走起來才流暢
+char.style.transition = 'none'; 
+
+// 監聽鍵盤按下
+window.addEventListener('keydown', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = true;
+        if (!isMoving) {
+            isMoving = true;
+            requestAnimationFrame(gameLoop);
+        }
+    }
+});
+
+// 監聽鍵盤放開
+window.addEventListener('keyup', (e) => {
+    if (keys.hasOwnProperty(e.key)) {
+        keys[e.key] = false;
+        // 檢查是否還有按鍵被按著
+        if (!Object.values(keys).some(v => v)) {
+            isMoving = false;
+        }
+    }
+});
+
+// 遊戲主迴圈 (控制平滑移動)
+function gameLoop() {
+    if (!isMoving) return;
+
+    if (keys.w || keys.ArrowUp) charY -= speed;
+    if (keys.s || keys.ArrowDown) charY += speed;
+    if (keys.a || keys.ArrowLeft) charX -= speed;
+    if (keys.d || keys.ArrowRight) charX += speed;
+
+    char.style.left = `${charX}px`;
+    char.style.top = `${charY}px`;
+
+    requestAnimationFrame(gameLoop);
+}
+
+// 覆蓋原本滑鼠點擊移動的邏輯 (避免衝突)
+document.querySelector('.farm-container').addEventListener('click', (event) => {
+    // 移除原本計算 targetRect 並設定 left/top 的那兩行程式碼
+    // 現在人物必須靠鍵盤走到格子旁邊才能點擊 (可以加入距離判定，這裡先保留原本的點擊直接互動)
+    /*
+    const character = document.getElementById('character');
+    const targetRect = cell.getBoundingClientRect();
+    character.style.left = ... // 移除這段
+    */
+    
+    // ... 下方的買格子、種植、收成邏輯保持不變 ...
+});
