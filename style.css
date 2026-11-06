@@ -1,0 +1,86 @@
+body { font-family: "微軟正黑體", sans-serif; background-color: #e8f5e9; text-align: center; margin: 0; padding: 10px; }
+#game-container { position: relative; max-width: 950px; margin: 0 auto; }
+#character { position: absolute; font-size: 60px; width: 60px; height: 60px; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: left 0.5s ease-out, top 0.5s ease-out; pointer-events: none; z-index: 100; }
+
+#stats { font-size: 20px; font-weight: bold; color: #ff8f00; background: #fff3e0; display: inline-block; padding: 15px 25px; border-radius: 20px; border: 2px solid #ffb300; margin-bottom: 10px; }
+.exp-container { margin-top: 10px; font-size: 18px; color: #5d4037; }
+#exp-bar { letter-spacing: 2px; color: #4caf50; }
+
+.upgrade-btn { background-color: #8bc34a; color: white; font-weight: bold; border: 2px solid #558b2f; border-radius: 10px; padding: 5px 15px; cursor: pointer; font-size: 16px; margin-left: 10px; }
+.upgrade-btn:hover { background-color: #7cb342; }
+
+.sys-btn { background-color: #03a9f4; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 14px; margin: 0 5px; }
+.reset-btn { background-color: #f44336; }
+
+.shop-container { display: flex; justify-content: center; gap: 20px; margin-bottom: 10px; }
+.shop { background: rgba(255,255,255,0.7); padding: 10px; border-radius: 10px; }
+.shop h3 { margin: 5px 0; font-size: 16px; color: #333; }
+.buy-btn { font-size: 14px; padding: 8px 12px; margin: 3px; cursor: pointer; background-color: #4caf50; color: white; border: none; border-radius: 5px; transition: 0.2s; }
+.buy-btn.selected { border: 3px solid #ff0000; transform: scale(1.1); background-color: #388e3c; }
+
+.hint { color: #555; font-size: 14px; margin-bottom: 10px; font-weight: bold;}
+
+.farm-container { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+.area-wrapper h2 { margin: 5px 0; color: #333; }
+
+.pagination-controls { margin-bottom: 5px; }
+.nav-arrow { background: none; border: none; font-size: 24px; color: #ff9800; cursor: pointer; transition: 0.2s; }
+.nav-arrow:hover { transform: scale(1.2); }
+.nav-arrow:disabled { color: #ccc; cursor: not-allowed; transform: none; }
+
+.grid-area { display: grid; grid-template-columns: repeat(3, 110px); grid-template-rows: repeat(3, 110px); gap: 10px; padding: 15px; border-radius: 15px; }
+#field { background-color: #8d6e63; border: 5px solid #5d4037; }
+#pasture { background-color: #81c784; border: 5px solid #388e3c; }
+
+.cell { position: relative; background-color: rgba(0, 0, 0, 0.1); border-radius: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+.cell.active-page { display: flex; } /* 只有當前頁面的格子會顯示 */
+.cell:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+.cell-info { position: absolute; top: 5px; left: 5px; background-color: rgba(101, 67, 33, 0.85); color: white; font-size: 12px; padding: 4px; border-radius: 5px; border: 1px solid #3e2723; text-align: left; line-height: 1.4; z-index: 10; }
+.cell-emoji { font-size: 55px; position: absolute; bottom: 5px; right: 5px; }
+
+.cell.locked-level { background-color: #795548; color: white; font-size: 16px; font-weight: bold; cursor: not-allowed; flex-direction: column; }
+.cell.locked-level::before { content: "🔒"; font-size: 24px; }
+.cell.locked-level::after { content: "Lv." attr(data-req-lv); }
+
+.cell.locked-buy { background-color: #ffcc80; color: #d84315; font-size: 16px; font-weight: bold; border: 3px dashed #ff9800; flex-direction: column; }
+.cell.locked-buy::before { content: "💰"; font-size: 24px; }
+.cell.locked-buy::after { content: "$" attr(data-price); }
+
+.ready-to-collect { cursor: pointer; border: 3px solid #ffeb3b; }
+.pick-btn { background-color: #cddc39; color: white; font-weight: 900; padding: 6px 8px; border-radius: 8px; border: 2px solid #827717; font-size: 14px; text-shadow: 1px 1px 0 #555; animation: pulse 1s infinite; white-space: nowrap; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+
+/* --- 動物飢餓與餵食狀態 (FOOD PRICE) --- */
+.hungry-ui {
+    background-color: #8D6E63;
+    padding: 6px;
+    text-align: center;
+    border: 2px solid #5D4037;
+}
+
+.feed-icon {
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 4px;
+    background: #5D4037;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.feed-btn {
+    background-color: #c0ca33;
+    color: white;
+    font-weight: 900;
+    padding: 4px 6px;
+    border-radius: 10px;
+    border: 2px solid #9e9d24;
+    font-size: 11px;
+    text-shadow: 1px 1px 0 #555;
+    animation: pulse 1.5s infinite;
+}
+
+.is-hungry {
+    border: 3px dashed #ff9800;
+    cursor: pointer;
+}
