@@ -1,17 +1,26 @@
-// ================= 全局資料與狀態 =================
-let globalMoney = 150000; // 測試用資金
-let maxLevelUnlocked = 1;
+// ================= 全局資料與狀態 (加入自動讀檔功能) =================
+// 嘗試從瀏覽器存檔中讀取資料，如果沒有存檔，就給予初始值
+let globalMoney = parseInt(localStorage.getItem('farm_money')) || 150000; 
+let maxLevelUnlocked = parseInt(localStorage.getItem('farm_level')) || 1;
+let ownedUpgrades = JSON.parse(localStorage.getItem('farm_upgrades')) || []; 
 let currentLevel = 0;
-let ownedUpgrades = []; 
 let selectedShopItem = null;
 
+// ================= 自動存檔函數 =================
+function saveGame() {
+    localStorage.setItem('farm_money', globalMoney);
+    localStorage.setItem('farm_level', maxLevelUnlocked);
+    localStorage.setItem('farm_upgrades', JSON.stringify(ownedUpgrades));
+    console.log("遊戲已自動存檔！");
+}
+
+// 關卡與作物設定
 const levels = Array.from({length: 15}, (_, i) => ({
     day: i + 1,
     time: 90 + (i * 10),
     target: { pumpkin: 2 + i, cabbage: i >= 2 ? i : 0 }
 }));
 
-// 【提示】如果你之後想換圖片，直接把 '🎃' 改成 '<img src="你的網址" style="width: 45px;">' 即可！
 const cropInfo = {
     pumpkin: { icon: '🎃', basePrice: 35, cost: 10 },
     cabbage: { icon: '🥬', basePrice: 60, cost: 20 }
@@ -91,7 +100,6 @@ function renderShop() {
     shopItems.forEach(item => {
         let el = document.createElement('div');
         el.className = 'shop-item ' + (ownedUpgrades.includes(item.id) ? 'owned' : '');
-        // 這裡已經使用 innerHTML，支援圖片標籤
         el.innerHTML = `<div style="font-size:30px">${item.icon}</div><div>$${item.price}</div>`;
         el.onclick = () => {
             if(!ownedUpgrades.includes(item.id)) {
@@ -113,6 +121,8 @@ function buySelectedItem() {
         document.getElementById('shop-desc').innerHTML = `購買成功：${selectedShopItem.name}！`;
         selectedShopItem = null;
         if(ownedUpgrades.includes('cabbage_seed')) document.getElementById('btn-cabbage').style.display = 'block';
+        
+        saveGame(); // 【存檔點】買完東西後存檔
         renderShop();
     } else { alert('金幣不足！'); }
 }
@@ -125,14 +135,8 @@ let animalIntervals = [];
 let plots = [];
 let targetPlotId = null;
 
-let player = { 
-    x: 365, y: 250, 
-    water: 0, 
-    crops: [], 
-    isMoving: false 
-};
+let player = { x: 365, y: 250, water: 0, crops: [], isMoving: false };
 
-// 移除原有的 CSS 偽元素，避免疊圖
 const dynamicStyle = document.createElement('style');
 dynamicStyle.innerHTML = `#bike::after, #well::after { content: none !important; }`;
 document.head.appendChild(dynamicStyle);
@@ -200,7 +204,6 @@ function generatePlots() {
 
 function upgradeFacilities() {
     let bikeEl = document.getElementById('bike');
-    // 使用 innerHTML，若要換成圖片可以直接修改下面的字串
     if (ownedUpgrades.includes('pink_truck')) bikeEl.innerHTML = '🚛';
     else if (ownedUpgrades.includes('blue_truck')) bikeEl.innerHTML = '🚚';
     else if (ownedUpgrades.includes('motorcycle')) bikeEl.innerHTML = '🏍️';
@@ -217,19 +220,13 @@ function renderDecorations() {
     document.querySelectorAll('.visual-decor, .fence-border').forEach(el => el.remove());
     const gameScreen = document.getElementById('screen-game');
     
-    // 如果有買柵欄，直接在遊戲畫面外框加一圈木柵欄的視覺效果
     if (ownedUpgrades.includes('fence')) {
         let fenceDiv = document.createElement('div');
         fenceDiv.className = 'fence-border';
-        // 使用 CSS 邊框畫出一圈柵欄的感覺
         fenceDiv.style.cssText = `
             position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 40px);
-            border: 15px dashed #8b4513; 
-            border-radius: 10px;
-            box-sizing: border-box;
-            pointer-events: none;
-            z-index: 2;
-            opacity: 0.8;
+            border: 15px dashed #8b4513; border-radius: 10px; box-sizing: border-box;
+            pointer-events: none; z-index: 2; opacity: 0.8;
         `;
         gameScreen.appendChild(fenceDiv);
     }
@@ -259,18 +256,15 @@ function renderDecorations() {
     });
 }
 
-// ================= 動物自動生產系統 =================
 function startAnimalSpawners() {
     animalIntervals.forEach(clearInterval);
     animalIntervals = [];
-
     function setupDrop(animalId, icon, basePrice, delay) {
         if(ownedUpgrades.includes(animalId)) {
             let timer = setInterval(() => spawnDrop(animalId, icon, basePrice), delay);
             animalIntervals.push(timer);
         }
     }
-
     setupDrop('chicken', '🥚', 20, 8000);
     setupDrop('sheep1', '🧶', 40, 12000);
     setupDrop('goat', '🥛', 50, 14000);
@@ -286,7 +280,7 @@ function spawnDrop(animalId, icon, basePrice) {
 
     let drop = document.createElement('div');
     drop.className = 'drop';
-    drop.innerHTML = icon; // 支援圖片渲染
+    drop.innerHTML = icon; 
     drop.style.cssText = `position: absolute; top: -30px; left: 10px; font-size: 30px; cursor: pointer; animation: bounce 1s infinite alternate; z-index: 50; pointer-events: auto;`;
     
     drop.onclick = (e) => {
@@ -312,7 +306,6 @@ function showFloatingText(text, x, y) {
     setTimeout(() => el.remove(), 1000);
 }
 
-// ================= UI 與狀態更新 =================
 function updateGameUI() {
     document.getElementById('coins-display').innerText = globalMoney;
     let m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
@@ -324,7 +317,7 @@ function updateGameUI() {
     for(let crop in lvl.target) {
         if(lvl.target[crop] > 0) goalsText += `${cropInfo[crop].icon} ${levelProgress[crop]}/${lvl.target[crop]} `;
     }
-    document.getElementById('level-goals').innerHTML = goalsText; // 支援圖片渲染
+    document.getElementById('level-goals').innerHTML = goalsText; 
 
     let handStr = '';
     if (player.water > 0) {
@@ -336,7 +329,7 @@ function updateGameUI() {
         if(pCount>0) handStr += `${cropInfo['pumpkin'].icon}x${pCount} `;
         if(cCount>0) handStr += `${cropInfo['cabbage'].icon}x${cCount}`;
     }
-    document.getElementById('player-hand').innerHTML = handStr; // 支援圖片渲染
+    document.getElementById('player-hand').innerHTML = handStr; 
 
     const plotEls = document.querySelectorAll('.plot');
     plots.forEach((pData, idx) => {
@@ -406,7 +399,6 @@ document.getElementById('bike').onclick = function() {
                 let price = cropInfo[c].basePrice;
                 if(c === 'pumpkin' && ownedUpgrades.includes('pie')) price += 20;
                 if(c === 'cabbage' && ownedUpgrades.includes('windmill')) price += 20;
-                
                 totalGain += price;
                 levelProgress[c]++;
             });
@@ -503,7 +495,18 @@ function endLevel(isWin) {
     document.getElementById('stat-sold').innerText = totalSold;
     document.getElementById('stat-earned').innerText = levelEarnedMoney;
     document.getElementById('stat-total').innerText = globalMoney;
+    
+    saveGame(); // 【存檔點】過關結算後存檔
     showScreen('screen-stats');
 }
+
+// ================= 重置遊戲功能 =================
+// 如果你想重新測試，可以在網頁按下 F12，在 Console 輸入 clearSave()
+window.clearSave = function() {
+    localStorage.removeItem('farm_money');
+    localStorage.removeItem('farm_level');
+    localStorage.removeItem('farm_upgrades');
+    alert('存檔已清除，請重新整理網頁！');
+};
 
 showScreen('screen-map');
