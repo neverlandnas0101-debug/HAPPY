@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Farm Mania 完整經營版</title>
-    <!-- 加上 ./ 確保 GitHub 能夠正確讀取 CSS -->
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -26,7 +25,9 @@
             
             <!-- 中間預覽與資訊 -->
             <div class="shop-center">
-                <div class="shop-preview"></div>
+                <div class="shop-preview">
+                    <!-- 預覽圖 -->
+                </div>
                 <div class="shop-info-box" id="shop-desc">
                     請點選左右兩側商品查看說明
                 </div>
@@ -55,7 +56,7 @@
         <div id="well" class="facility"></div>
         <div id="bike" class="facility"></div>
 
-        <!-- 5塊農地 (會由 JS 根據擴建動態生成) -->
+        <!-- 5塊農地 -->
         <div class="plot" style="left: 200px; top: 380px;" data-id="0"><span class="status-icon"></span><span class="crop-img"></span></div>
         <div class="plot" style="left: 360px; top: 380px;" data-id="1"><span class="status-icon"></span><span class="crop-img"></span></div>
         <div class="plot" style="left: 520px; top: 380px;" data-id="2"><span class="status-icon"></span><span class="crop-img"></span></div>
@@ -80,9 +81,10 @@
         <div class="stats-board">
             <h2>STATISTICS</h2>
             <div class="stat-line"><span>PRODUCTS SOLD</span> <span><span id="stat-sold">0</span> 個</span></div>
-            <div class="stat-line"><span>MONEY EARNED</span> <span>🪙 x <span id="stat-earned">0</span></span></div>
+            <!-- 把原本的字元換成 <img src="你的圖片網址"> -->
+            <div class="stat-line"><span>MONEY EARNED</span> <span><img src="https://https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ37_OpPePLQRZpTVl4pPyjOMY-ElqyFhtjeR151c5VYw&s=10.png" style="width: 24px; vertical-align: middle;"> x <span id="stat-earned">0</span></span></div>
             <div class="stat-line" style="border-top:2px solid #cd853f; padding-top:10px;">
-                <span>TOTAL MONEY</span> <span>🪙 x <span id="stat-total">0</span></span>
+                <span>TOTAL MONEY</span> <span><img src="https://https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ37_OpPePLQRZpTVl4pPyjOMY-ElqyFhtjeR151c5VYw&s=10.png" style="width: 24px; vertical-align: middle;"> x <span id="stat-total">0</span></span>
             </div>
             <button class="stats-next-btn" onclick="showScreen('screen-shop')">CONTINUE</button>
         </div>
@@ -90,7 +92,7 @@
 
 </div>
 
-<!-- 引入遊戲邏輯 (同樣加上 ./ 保障路徑正確) -->
-<script src="./script.js"></script>
+<!-- 引入遊戲邏輯 -->
+<script src="script.js"></script>
 </body>
 </html>
