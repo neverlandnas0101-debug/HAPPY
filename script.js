@@ -231,16 +231,22 @@ function renderDecorations() {
         gameScreen.appendChild(fenceDiv);
     }
 
+    // 【終極防卡版座標】將所有動物的 Y軸 (top) 往上壓縮，絕對不碰到下方農田
     const decorPositions = {
-        'sheep1': { left: '30px', top: '130px' },
-        'cow1': { left: '20px', top: '210px' },
-        'brown_cow': { left: '30px', top: '290px' }, 
-        'goat': { left: '710px', top: '130px' },
-        'chicken': { left: '720px', top: '210px' },
-        'turkey': { left: '710px', top: '290px' },   
-        'pear_tree': { left: '620px', top: '180px' },
-        'house1': { left: '240px', top: '90px' },
-        'barn': { left: '460px', top: '90px' }
+        // 左側動物 (排緊密一點，全部往上提)
+        'sheep1': { left: '10px', top: '140px' },
+        'cow1': { left: '80px', top: '210px' },
+        'brown_cow': { left: '10px', top: '280px' }, // 安全距離！遠離農田的 380px
+        
+        // 右側動物 (同樣往上提)
+        'goat': { left: '720px', top: '140px' },
+        'chicken': { left: '650px', top: '210px' },
+        'turkey': { left: '720px', top: '280px' },   // 安全距離！
+        'pear_tree': { left: '560px', top: '170px' }, 
+        
+        // 農舍保持在最上方
+        'house1': { left: '260px', top: '70px' },
+        'barn': { left: '460px', top: '70px' }
     };
 
     ownedUpgrades.forEach(id => {
@@ -382,6 +388,13 @@ document.getElementById('well').onclick = function() {
     walkTo(this, () => {
         if (player.crops.length > 0) return alert("手上拿著蔬菜不能打水！");
         
+        // 【新增倒水功能】如果手上已經有水了，再點一次水井就是把水倒掉
+        if (player.water > 0) {
+            player.water = 0;
+            updateGameUI();
+            return; // 提早結束，不執行下面的裝水動作
+        }
+        
         let maxWater = 1;
         if (ownedUpgrades.includes('pump')) maxWater = 999; 
         else if (ownedUpgrades.includes('well2')) maxWater = 3; 
@@ -448,12 +461,17 @@ function handlePlotClick(id, el) {
             if (ownedUpgrades.includes('basket')) maxCapacity = 5;
             else if (ownedUpgrades.includes('wooden_box')) maxCapacity = 3;
 
-            if (player.crops.length < maxCapacity && player.water === 0) {
+            // 【修復 Bug 的關鍵】
+            // 如果手上有水（包含無限水），走到成熟的蔬菜旁邊時，就讓農夫「自動把水桶放下」！
+            if (player.water > 0) {
+                player.water = 0; 
+            }
+
+            // 放下水桶後，就可以正常採收了
+            if (player.crops.length < maxCapacity) {
                 player.crops.push(pData.cropType);
                 pData.state = 'empty'; pData.cropType = null; 
                 updateGameUI();
-            } else if (player.water > 0) {
-                alert("拿著水桶不能採收！先去別的地方澆完。");
             } else {
                 alert("手上拿不下了！快去右邊賣掉！");
             }
