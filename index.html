@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Mania 完整經營版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-window">
+
+    <!-- 畫面 1: 關卡地圖 (Level Map) -->
+    <div id="screen-map" class="screen active">
+        <h1 class="map-title">選擇關卡</h1>
+        <button class="shop-btn-top" onclick="showScreen('screen-shop')">前往商店 🛒</button>
+        <div id="map-path"></div> <!-- 星星關卡由 JS 生成 -->
+    </div>
+
+    <!-- 畫面 2: 商店 (Shop) -->
+    <div id="screen-shop" class="screen">
+        <div class="shop-container">
+            <!-- 左側物品 -->
+            <div class="shop-col" id="shop-left"></div>
+            
+            <!-- 中間預覽與資訊 -->
+            <div class="shop-center">
+                <div class="shop-preview">
+                    <!-- 預覽圖 -->
+                </div>
+                <div class="shop-info-box" id="shop-desc">
+                    請點選左右兩側商品查看說明
+                </div>
+                <div class="shop-bottom-bar">
+                    <div class="shop-money">💰 $<span id="shop-money-display"></span></div>
+                    <button class="buy-btn" onclick="buySelectedItem()">BUY</button>
+                    <button class="back-btn" onclick="showScreen('screen-map')">BACK 🔙</button>
+                </div>
+            </div>
+
+            <!-- 右側物品 -->
+            <div class="shop-col" id="shop-right"></div>
+        </div>
+    </div>
+
+    <!-- 畫面 3: 遊戲本體 (Game) -->
+    <div id="screen-game" class="screen">
+        <div id="top-ui">
+            <div id="timer-display">⏱️ 02:00</div>
+            <div class="goals-box">
+                <div>💰 金幣: <span id="coins-display">0</span></div>
+                <div id="level-goals">目標: 賣出 2 🎃</div>
+            </div>
+        </div>
+
+        <div id="well" class="facility"></div>
+        <div id="bike" class="facility"></div>
+
+        <!-- 5塊農地 -->
+        <div class="plot" style="left: 200px; top: 380px;" data-id="0"><span class="status-icon"></span><span class="crop-img"></span></div>
+        <div class="plot" style="left: 360px; top: 380px;" data-id="1"><span class="status-icon"></span><span class="crop-img"></span></div>
+        <div class="plot" style="left: 520px; top: 380px;" data-id="2"><span class="status-icon"></span><span class="crop-img"></span></div>
+        <div class="plot" style="left: 280px; top: 480px;" data-id="3"><span class="status-icon"></span><span class="crop-img"></span></div>
+        <div class="plot" style="left: 440px; top: 480px;" data-id="4"><span class="status-icon"></span><span class="crop-img"></span></div>
+
+        <!-- 玩家 -->
+        <div id="player" style="left: 365px; top: 250px;">
+            <div id="player-hand"></div>
+        </div>
+
+        <!-- 種子選單 -->
+        <div id="seed-menu">
+            <button onclick="buySeed('pumpkin')">🎃 南瓜種子 ($10)</button>
+            <button id="btn-cabbage" onclick="buySeed('cabbage')" style="display:none;">🥬 高麗菜種子 ($20)</button>
+            <button onclick="closeMenu()">❌ 取消</button>
+        </div>
+    </div>
+
+    <!-- 畫面 4: 結算統計 (Statistics) -->
+    <div id="screen-stats" class="screen">
+        <div class="stats-board">
+            <h2>STATISTICS</h2>
+            <div class="stat-line"><span>PRODUCTS SOLD</span> <span><span id="stat-sold">0</span> 個</span></div>
+            <!-- 把原本的字元換成 <img src="你的圖片網址"> -->
+            <div class="stat-line"><span>MONEY EARNED</span> <span><img src="https://media.istockphoto.com/id/1313239721/zh/%E5%90%91%E9%87%8F/%E5%9C%A8%E7%99%BD%E8%89%B2%E8%83%8C%E6%99%AF%E4%B8%8A%E9%9A%94%E9%9B%A2%E7%9A%84%E8%B2%A8%E5%B9%A3%E8%A2%8B%E5%9C%96%E7%A4%BA%E5%90%91%E9%87%8F%E6%8F%92%E5%9C%96.jpg?s=612x612&w=0&k=20&c=GVhcDhbMh0tT2YZxqxzE8Yliy534XLQfWSKd-kyFNDU=" style="width: 24px; vertical-align: middle;"> x <span id="stat-earned">0</span></span></div>
+            <div class="stat-line" style="border-top:2px solid #cd853f; padding-top:10px;">
+                <span>TOTAL MONEY</span> <span><img src="https://media.istockphoto.com/id/1313239721/zh/%E5%90%91%E9%87%8F/%E5%9C%A8%E7%99%BD%E8%89%B2%E8%83%8C%E6%99%AF%E4%B8%8A%E9%9A%94%E9%9B%A2%E7%9A%84%E8%B2%A8%E5%B9%A3%E8%A2%8B%E5%9C%96%E7%A4%BA%E5%90%91%E9%87%8F%E6%8F%92%E5%9C%96.jpg?s=612x612&w=0&k=20&c=GVhcDhbMh0tT2YZxqxzE8Yliy534XLQfWSKd-kyFNDU=" style="width: 24px; vertical-align: middle;"> x <span id="stat-total">0</span></span>
+            </div>
+            <button class="stats-next-btn" onclick="showScreen('screen-shop')">CONTINUE</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- 引入遊戲邏輯 -->
+<script src="script.js"></script>
+</body>
+</html>
