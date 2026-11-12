@@ -519,12 +519,19 @@ function endLevel(isWin) {
 }
 
 // ================= 重置遊戲功能 =================
-// 如果你想重新測試，可以在網頁按下 F12，在 Console 輸入 clearSave()
-window.clearSave = function() {
-    localStorage.removeItem('farm_money');
-    localStorage.removeItem('farm_level');
-    localStorage.removeItem('farm_upgrades');
-    alert('存檔已清除，請重新整理網頁！');
-};
+function deleteSave() {
+    // 使用 confirm 跳出確認視窗，避免小朋友不小心按到
+    let doubleCheck = confirm("⚠️ 警告：真的要刪除所有遊戲進度嗎？\n(金幣、解鎖關卡和買過的動物都會全部消失喔！)");
+    
+    if (doubleCheck) {
+        // 清除瀏覽器裡的存檔資料
+        localStorage.removeItem('farm_money');
+        localStorage.removeItem('farm_level');
+        localStorage.removeItem('farm_upgrades');
+        
+        alert("存檔已刪除！遊戲即將重新開始。");
+        location.reload(); // 讓網頁自動重新整理，回到最一開始的狀態
+    }
+}
 
 showScreen('screen-map');
