@@ -32,6 +32,25 @@ body {
 #screen-map { background: rgba(123, 192, 39, 0.9); }
 .map-title { text-align: center; color: white; text-shadow: 2px 2px black; font-size: 36px; margin-top: 20px;}
 .shop-btn-top { position: absolute; top: 20px; right: 20px; padding: 10px 20px; font-size: 18px; background: #ff9800; color: white; border: 3px solid #e65100; border-radius: 10px; cursor: pointer; font-weight: bold; }
+/* 刪除存檔按鈕設計 (放在地圖左下角，用紅色代表危險/警告) */
+.delete-save-btn { 
+    position: absolute; 
+    bottom: 20px; 
+    left: 20px; 
+    background: #d32f2f; 
+    color: white; 
+    border: 3px solid #b71c1c; 
+    padding: 10px 20px; 
+    font-size: 18px; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+.delete-save-btn:hover { 
+    background: #ff5252; 
+    transform: scale(1.05); 
+}
 #map-path { position: relative; width: 100%; height: 450px; }
 .level-star { position: absolute; font-size: 35px; cursor: pointer; text-shadow: 0 4px 6px rgba(0,0,0,0.4); transition: transform 0.2s; }
 .level-star:hover { transform: scale(1.3); }
