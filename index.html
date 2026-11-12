@@ -10,11 +10,15 @@
 
 <div id="game-window">
 
-    <!-- 畫面 1: 關卡地圖 (Level Map) -->
+   <!-- 畫面 1: 關卡地圖 (Level Map) -->
     <div id="screen-map" class="screen active">
         <h1 class="map-title">選擇關卡</h1>
         <button class="shop-btn-top" onclick="showScreen('screen-shop')">前往商店 🛒</button>
-        <div id="map-path"></div> <!-- 星星關卡由 JS 生成 -->
+        
+        <!-- 👇 新增這顆刪除存檔按鈕 👇 -->
+        <button class="delete-save-btn" onclick="deleteSave()">🗑️ 刪除存檔</button>
+        
+        <div id="map-path"></div> 
     </div>
 
     <!-- 畫面 2: 商店 (Shop) -->
