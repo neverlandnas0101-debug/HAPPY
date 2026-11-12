@@ -1,6 +1,6 @@
 // ================= 全局資料與狀態 (加入自動讀檔功能) =================
 // 嘗試從瀏覽器存檔中讀取資料，如果沒有存檔，就給予初始值
-let globalMoney = parseInt(localStorage.getItem('farm_money')) || 150000; 
+let globalMoney = parseInt(localStorage.getItem('farm_money')) || 100; 
 let maxLevelUnlocked = parseInt(localStorage.getItem('farm_level')) || 1;
 let ownedUpgrades = JSON.parse(localStorage.getItem('farm_upgrades')) || []; 
 let currentLevel = 0;
