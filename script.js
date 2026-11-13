@@ -1,6 +1,6 @@
 // ================= 全局資料與狀態 (加入自動讀檔功能) =================
 // 嘗試從瀏覽器存檔中讀取資料，如果沒有存檔，就給予初始值
-let globalMoney = parseInt(localStorage.getItem('farm_money')) || 100; 
+let globalMoney = parseInt(localStorage.getItem('farm_money')) || 200; 
 let maxLevelUnlocked = parseInt(localStorage.getItem('farm_level')) || 1;
 let ownedUpgrades = JSON.parse(localStorage.getItem('farm_upgrades')) || []; 
 let currentLevel = 0;
@@ -14,16 +14,31 @@ function saveGame() {
     console.log("遊戲已自動存檔！");
 }
 
-// 關卡與作物設定
+// 1. 升級版關卡設定：隨著天數增加，陸續加入羊毛、雞蛋、水梨、牛奶等目標！
 const levels = Array.from({length: 15}, (_, i) => ({
     day: i + 1,
-    time: 90 + (i * 10),
-    target: { pumpkin: 2 + i, cabbage: i >= 2 ? i : 0 }
+    time: 90 + (i * 15), // 後面關卡要收集比較多東西，稍微多給一點時間
+    target: { 
+        pumpkin: 2 + Math.floor(i / 2),             // 第 1 關起：南瓜
+        cabbage: i >= 2 ? 1 + Math.floor(i / 2) : 0,// 第 3 關起：高麗菜
+        wool: i >= 4 ? Math.floor(i / 3) : 0,       // 第 5 關起：羊毛 🧶 (需買綿羊)
+        egg: i >= 6 ? Math.floor(i / 3) : 0,        // 第 7 關起：雞蛋 🥚 (需買小雞)
+        pear: i >= 9 ? Math.floor(i / 4) : 0,       // 第 10 關起：水梨 🍐 (需買果樹)
+        milk: i >= 11 ? Math.floor(i / 4) : 0       // 第 12 關起：牛奶 🍼 (需買乳牛)
+    }
 }));
 
+// 2. 把動物產物的圖示也註冊進來，這樣上方目標列才認得它們！
 const cropInfo = {
     pumpkin: { icon: '🎃', basePrice: 35, cost: 10 },
-    cabbage: { icon: '🥬', basePrice: 60, cost: 20 }
+    cabbage: { icon: '🥬', basePrice: 60, cost: 20 },
+    wool:    { icon: '🧶' },
+    egg:     { icon: '🥚' },
+    pear:    { icon: '🍐' },
+    milk:    { icon: '🍼' },
+    goat_milk: { icon: '🥛' },
+    turkey_leg: { icon: '🍗' },
+    butter:  { icon: '🧈' }
 };
 
 // ================= 完整商店商品清單 =================
@@ -145,13 +160,16 @@ function startLevel() {
     showScreen('screen-game');
     const lvl = levels[currentLevel];
     
+    // 👇 【新增這行】每次進入關卡時，檢查存檔裡有沒有買過高麗菜種子，有的話就把按鈕打開！
+    document.getElementById('btn-cabbage').style.display = ownedUpgrades.includes('cabbage_seed') ? 'block' : 'none';
+
     let extraTime = 0;
     if(ownedUpgrades.includes('house1')) extraTime += 10;
     if(ownedUpgrades.includes('barn')) extraTime += 20;
-    
+
     timeRemaining = lvl.time + extraTime;
     levelEarnedMoney = 0;
-    levelProgress = { pumpkin: 0, cabbage: 0 };
+    levelProgress = { pumpkin: 0, cabbage: 0, wool: 0, egg: 0, pear: 0, milk: 0, goat_milk: 0, turkey_leg: 0, butter: 0 };
     player.water = 0;
     player.crops = [];
     
@@ -265,22 +283,23 @@ function renderDecorations() {
 function startAnimalSpawners() {
     animalIntervals.forEach(clearInterval);
     animalIntervals = [];
-    function setupDrop(animalId, icon, basePrice, delay) {
+    // 多傳入一個 itemKey 代號，用來紀錄收集進度
+    function setupDrop(animalId, itemKey, icon, basePrice, delay) {
         if(ownedUpgrades.includes(animalId)) {
-            let timer = setInterval(() => spawnDrop(animalId, icon, basePrice), delay);
+            let timer = setInterval(() => spawnDrop(animalId, itemKey, icon, basePrice), delay);
             animalIntervals.push(timer);
         }
     }
-    setupDrop('chicken', '🥚', 20, 8000);
-    setupDrop('sheep1', '🧶', 40, 12000);
-    setupDrop('goat', '🥛', 50, 14000);
-    setupDrop('cow1', '🍼', 60, 15000);
-    setupDrop('turkey', '🍗', 70, 15000);
-    setupDrop('brown_cow', '🧈', 100, 20000);
-    setupDrop('pear_tree', '🍐', 50, 10000);
+    setupDrop('chicken', 'egg', '🥚', 20, 8000);
+    setupDrop('sheep1', 'wool', '🧶', 40, 12000);
+    setupDrop('goat', 'goat_milk', '🥛', 50, 14000);
+    setupDrop('cow1', 'milk', '🍼', 60, 15000);
+    setupDrop('turkey', 'turkey_leg', '🍗', 70, 15000);
+    setupDrop('brown_cow', 'butter', '🧈', 100, 20000);
+    setupDrop('pear_tree', 'pear', '🍐', 50, 10000);
 }
 
-function spawnDrop(animalId, icon, basePrice) {
+function spawnDrop(animalId, itemKey, icon, basePrice) {
     let parent = document.getElementById('decor-' + animalId);
     if(!parent || parent.querySelector('.drop')) return; 
 
@@ -296,9 +315,16 @@ function spawnDrop(animalId, icon, basePrice) {
 
         globalMoney += finalPrice;
         levelEarnedMoney += finalPrice;
+        
+        // 【關鍵新增】點擊收取動物產物時，把對應的目標進度 +1，並檢查是否過關！
+        if (levelProgress[itemKey] !== undefined) {
+            levelProgress[itemKey]++;
+        }
+
         drop.remove();
         showFloatingText(`+$${finalPrice}`, e.clientX, e.clientY);
         updateGameUI();
+        checkWin(); // 收取產物後立刻檢查有沒有達成今日目標
     };
     parent.appendChild(drop);
 }
@@ -464,7 +490,7 @@ function handlePlotClick(id, el) {
             // 【修復 Bug 的關鍵】
             // 如果手上有水（包含無限水），走到成熟的蔬菜旁邊時，就讓農夫「自動把水桶放下」！
             if (player.water > 0) {
-                player.water = 0; 
+               player.water = 0; 
             }
 
             // 放下水桶後，就可以正常採收了
@@ -508,16 +534,21 @@ function checkWin() {
 }
 
 function endLevel(isWin) {
-    if(isWin && currentLevel + 1 === maxLevelUnlocked) maxLevelUnlocked++; 
-    let totalSold = (levelProgress.pumpkin || 0) + (levelProgress.cabbage || 0);
+    if(isWin) {
+        if(currentLevel + 1 === maxLevelUnlocked) maxLevelUnlocked++;
+        // 👇 【新增】過關獎金：第 1 關送 150、第 2 關送 300，依此類推！
+        let clearBonus = (currentLevel + 1) * 150;
+        globalMoney += clearBonus;
+        levelEarnedMoney += clearBonus;
+    }
+    let totalSold = Object.values(levelProgress).reduce((sum, count) => sum + count, 0);
     document.getElementById('stat-sold').innerText = totalSold;
     document.getElementById('stat-earned').innerText = levelEarnedMoney;
     document.getElementById('stat-total').innerText = globalMoney;
     
-    saveGame(); // 【存檔點】過關結算後存檔
+    saveGame(); 
     showScreen('screen-stats');
 }
-
 // ================= 重置遊戲功能 =================
 function deleteSave() {
     // 使用 confirm 跳出確認視窗，避免小朋友不小心按到
