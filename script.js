@@ -1,6 +1,6 @@
 // ================= 全局資料與狀態 (加入自動讀檔功能) =================
 // 嘗試從瀏覽器存檔中讀取資料，如果沒有存檔，就給予初始值
-let globalMoney = parseInt(localStorage.getItem('farm_money')) || 200; 
+let globalMoney = parseInt(localStorage.getItem('farm_money')) || 3000; 
 let maxLevelUnlocked = parseInt(localStorage.getItem('farm_level')) || 1;
 let ownedUpgrades = JSON.parse(localStorage.getItem('farm_upgrades')) || []; 
 let currentLevel = 0;
@@ -14,31 +14,51 @@ function saveGame() {
     console.log("遊戲已自動存檔！");
 }
 
-// 1. 升級版關卡設定：隨著天數增加，陸續加入羊毛、雞蛋、水梨、牛奶等目標！
-const levels = Array.from({length: 15}, (_, i) => ({
-    day: i + 1,
-    time: 90 + (i * 15), // 後面關卡要收集比較多東西，稍微多給一點時間
-    target: { 
-        pumpkin: 2 + Math.floor(i / 2),             // 第 1 關起：南瓜
-        cabbage: i >= 2 ? 1 + Math.floor(i / 2) : 0,// 第 3 關起：高麗菜
-        wool: i >= 4 ? Math.floor(i / 3) : 0,       // 第 5 關起：羊毛 🧶 (需買綿羊)
-        egg: i >= 6 ? Math.floor(i / 3) : 0,        // 第 7 關起：雞蛋 🥚 (需買小雞)
-        pear: i >= 9 ? Math.floor(i / 4) : 0,       // 第 10 關起：水梨 🍐 (需買果樹)
-        milk: i >= 11 ? Math.floor(i / 4) : 0       // 第 12 關起：牛奶 🍼 (需買乳牛)
-    }
-}));
+// 1. 精心設計的 15 關卡：每一關目標都不同，且會循序漸進解鎖所有農作物與動物產物！
+const levels = [
+    // Day 1 ~ 2：新手教學（純種南瓜，數量遞增）
+    { day: 1,  time: 90,  target: { pumpkin: 2 } },
+    { day: 2,  time: 95,  target: { pumpkin: 4 } },
+
+    // Day 3 ~ 4：解鎖高麗菜 🥬
+    { day: 3,  time: 105, target: { pumpkin: 3, cabbage: 2 } },
+    { day: 4,  time: 115, target: { pumpkin: 4, cabbage: 4 } },
+
+    // Day 5 ~ 6：解鎖綿羊（羊毛 🧶）
+    { day: 5,  time: 125, target: { pumpkin: 4, cabbage: 3, wool: 1 } },
+    { day: 6,  time: 135, target: { pumpkin: 5, cabbage: 4, wool: 2 } },
+
+    // Day 7 ~ 8：解鎖小雞（雞蛋 🥚）
+    { day: 7,  time: 150, target: { pumpkin: 5, cabbage: 4, wool: 2, egg: 2 } },
+    { day: 8,  time: 165, target: { pumpkin: 6, cabbage: 5, wool: 3, egg: 3 } },
+
+    // Day 9 ~ 10：解鎖果樹（水梨 🍐）
+    { day: 9,  time: 180, target: { pumpkin: 6, cabbage: 5, egg: 3, pear: 1 } },
+    { day: 10, time: 195, target: { pumpkin: 7, cabbage: 6, wool: 3, pear: 2 } },
+
+    // Day 11 ~ 12：解鎖乳牛（牛奶 🍼）與山羊（羊奶 🥛）
+    { day: 11, time: 210, target: { pumpkin: 7, cabbage: 6, pear: 2, milk: 1 } },
+    { day: 12, time: 225, target: { pumpkin: 8, cabbage: 7, milk: 2, goat_milk: 1 } },
+
+    // Day 13 ~ 14：解鎖火雞（火雞腿 🍗）與棕牛（奶油 🧈）
+    { day: 13, time: 240, target: { pumpkin: 8, cabbage: 8, goat_milk: 2, turkey_leg: 1 } },
+    { day: 14, time: 255, target: { pumpkin: 9, cabbage: 8, turkey_leg: 2, butter: 1 } },
+
+    // Day 15：最終大魔王關卡（農場大豐收！）
+    { day: 15, time: 280, target: { pumpkin: 10, cabbage: 10, wool: 3, egg: 3, pear: 2, milk: 2, butter: 1 } }
+];
 
 // 2. 把動物產物的圖示也註冊進來，這樣上方目標列才認得它們！
 const cropInfo = {
-    pumpkin: { icon: '🎃', basePrice: 35, cost: 10 },
-    cabbage: { icon: '🥬', basePrice: 60, cost: 20 },
-    wool:    { icon: '🧶' },
-    egg:     { icon: '🥚' },
-    pear:    { icon: '🍐' },
-    milk:    { icon: '🍼' },
-    goat_milk: { icon: '🥛' },
+    pumpkin:    { icon: '🎃', basePrice: 35, cost: 10 },
+    cabbage:    { icon: '🥬', basePrice: 60, cost: 20 },
+    wool:       { icon: '🧶' },
+    egg:        { icon: '🥚' },
+    pear:       { icon: '🍐' },
+    milk:       { icon: '🍼' },
+    goat_milk:  { icon: '🥛' },
     turkey_leg: { icon: '🍗' },
-    butter:  { icon: '🧈' }
+    butter:     { icon: '🧈' }
 };
 
 // ================= 完整商店商品清單 =================
